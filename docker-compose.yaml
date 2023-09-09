@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  api-server:
+    image: api-server:local
+    command: bash
+    tty: true
+    stdin_open: true
+
+    volumes:
+      - ./techopark-ai-course:/mounted
+    ports:
+      - 5000:5000
+
+    build:
+      dockerfile: ./dockerfiles/api-server.Dockerfile
+
+
+  web-server:
+    image: web-server:local
+    volumes:
+      - ./techopark-ai-course:/usr/share/nginx/html
+    environment:
+      - NGINX_HOST=0.0.0.0
+      - NGINX_PORT=80
+
+    build:
+      dockerfile: ./dockerfiles/web-server.Dockerfile
+
+
+  inference-server:
+    image: inference-server:local
+    command: bash
+    tty: true
+    stdin_open: true
+
+    volumes:
+      - ./techopark-ai-course:/mounted
+
+    
+    build:
+      dockerfile: ./dockerfiles/inference-server.Dockerfile
+      
+   
