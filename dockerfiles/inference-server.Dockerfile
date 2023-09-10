@@ -20,5 +20,5 @@ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
 WORKDIR /root/.protoc
 WORKDIR /root
 
-RUN curl -L -o /root/.protoc/plugins/protoc-gen-grpc-java https://repo.maven.apache.org/maven2/io/grpc/protoc-gen-grpc-java/1.41.0/protoc-gen-grpc-java-1.41.0-linux-x86_64
-RUN chmod +x /root/.protoc/plugins/protoc-gen-grpc-java
+# RUN curl -L -o /root/.protoc/plugins/protoc-gen-grpc-java https://repo.maven.apache.org/maven2/io/grpc/protoc-gen-grpc-java/1.41.0/protoc-gen-grpc-java-1.41.0-linux-x86_64
+# RUN chmod +x /root/.protoc/plugins/protoc-gen-grpc-java
