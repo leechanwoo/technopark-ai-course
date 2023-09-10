@@ -3,12 +3,37 @@
  */
 package inference.server;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class AppTest {
-    @Test void appHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import com.example.HelloServiceGrpc;
+import com.example.ThisIsGeneratedJavaServiceGrpc;
+import com.example.GrpcTest;
+
+
+class AppGrpcTest {
+
+    @Test
+    public void test_grpc() {
+
+        // Create a channel to communicate with the server
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext().build();
+
+        HelloServiceGrpc.HelloServiceBlockingStub blockingStub = HelloServiceGrpc.newBlockingStub(channel);
+        GrpcTest.HelloResponse response = blockingStub.sayHello(GrpcTest.HelloRequest.newBuilder().setName("Alice").build());
+
+        channel.shutdown();
+
+        assertEquals("Hello, Alice", response.getGreeting());
     }
+    
 }

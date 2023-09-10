@@ -5,7 +5,7 @@ package inference.server;
 
 import com.example.HelloServiceGrpc;
 import com.example.ThisIsGeneratedJavaServiceGrpc;
-import com.example.Test;
+import com.example.GrpcTest;
 // import io.grpc.ManagedChannel;
 // import io.grpc.ManagedChannelBuilder;
 // import io.grpc.stub.StreamObserver;
@@ -19,7 +19,7 @@ public class App {
 
     public static void main(String[] args) {
 
-        Server server = ServerBuilder.forPort(5000) // Specify the port to listen on
+        Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
                 .addService(new HelloServiceImpl()) // Register your service implementation
                 .build();
 
@@ -27,7 +27,7 @@ public class App {
             // Start the gRPC server
             server.start();
 
-            System.out.println("Server started and listening on port 5000");
+            System.out.println("Server started and listening on port 50051");
 
             // Block until the server is shut down
             server.awaitTermination();
@@ -41,14 +41,14 @@ public class App {
     static class HelloServiceImpl extends HelloServiceGrpc.HelloServiceImplBase {
         @Override
         public void sayHello(
-            Test.HelloRequest request,
-            io.grpc.stub.StreamObserver<Test.HelloResponse> responseObserver) {
+            GrpcTest.HelloRequest request,
+            io.grpc.stub.StreamObserver<GrpcTest.HelloResponse> responseObserver) {
             
             // Implement your server-side logic here
             String message = "Hello, " + request.getName();
             
             // Build and send the response
-            Test.HelloResponse response = Test.HelloResponse.newBuilder()
+            GrpcTest.HelloResponse response = GrpcTest.HelloResponse.newBuilder()
                     .setGreeting(message)
                     .build();
             
