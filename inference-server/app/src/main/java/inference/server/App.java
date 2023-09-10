@@ -12,6 +12,17 @@ import com.example.GrpcTest;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
+
+import ai.onnxruntime.NodeInfo;
+import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OrtEnvironment;
+import ai.onnxruntime.OrtException;
+import ai.onnxruntime.OrtSession;
+import ai.onnxruntime.OrtSession.Result;
+import ai.onnxruntime.OrtSession.SessionOptions;
+import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
+
+
 public class App {
     public String getGreeting() {
         return "Hello World!";
