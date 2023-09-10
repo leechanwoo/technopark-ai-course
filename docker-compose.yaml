@@ -13,7 +13,7 @@ services:
     volumes:
       - ./api-server:/home/ubuntu/api-server
 
-    workding_dir: /home/ubuntu/api-server
+    working_dir: /home/ubuntu/api-server
 
     build:
       dockerfile: ./dockerfiles/springboot-app.Dockerfile
@@ -25,7 +25,9 @@ services:
     stdin_open: true
     
     ports:
-      - 5000:5000
+      - 50051:50051
+
+    working_dir: /home/ubuntu/inference-server
 
     volumes:
       - ./inference-server:/home/ubuntu/inference-server
