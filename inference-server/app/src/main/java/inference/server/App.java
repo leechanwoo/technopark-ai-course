@@ -14,6 +14,7 @@ import io.grpc.ServerBuilder;
 
 
 import ai.onnxruntime.NodeInfo;
+import ai.onnxruntime.TensorInfo;
 import ai.onnxruntime.OnnxTensor;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
@@ -22,13 +23,23 @@ import ai.onnxruntime.OrtSession.Result;
 import ai.onnxruntime.OrtSession.SessionOptions;
 import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
 
+import java.io.IOException;
+import java.util.Collections;
+
+
 
 public class App {
     public String getGreeting() {
         return "Hello World!";
     }
 
+
     public static void main(String[] args) {
+        try {
+            onnxRunner();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
                 .addService(new HelloServiceImpl()) // Register your service implementation
@@ -67,4 +78,38 @@ public class App {
             responseObserver.onCompleted();
         }
     }
+
+
+    static void onnxRunner() throws OrtException, IOException {
+        OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+        OrtSession.SessionOptions opts = new SessionOptions();
+        opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+
+        OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
+
+        TensorInfo inputTensorInfo = (TensorInfo)session.getInputInfo().get("input").getInfo();
+        long[] shape = inputTensorInfo.getShape();
+
+        String inputName = session.getInputNames().iterator().next();
+
+        float[][][][] testData = new float[1][(int)shape[1]][(int)shape[2]][(int)shape[3]];
+        for (float[][][] dim : testData) {
+           for (float[][] channels : dim) {
+               for (float[] rows : channels) {
+                   for (float elem : rows ) {
+                       elem = 0;
+                   }
+               }
+           } 
+        }
+
+        OnnxTensor test = OnnxTensor.createTensor(env, testData);
+        Result output = session.run(Collections.singletonMap(inputName, test));
+        float[][] probs = (float[][])output.get(0).getValue();
+        for (float p : probs[0]) {
+            System.out.println(p);
+        }
+    }
+
 }
