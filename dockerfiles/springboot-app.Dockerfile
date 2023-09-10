@@ -17,3 +17,4 @@ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk install springboot 3.1.3
   
 
+WORKDIR /home/ubuntu
