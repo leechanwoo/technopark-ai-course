@@ -30,7 +30,7 @@ services:
     working_dir: /home/ubuntu/inference-server
 
     volumes:
-      - ./inference-server-test:/home/ubuntu/inference-server
+      - ./inference-server:/home/ubuntu/inference-server
 
     build:
       dockerfile: ./dockerfiles/ai-runtime.Dockerfile
