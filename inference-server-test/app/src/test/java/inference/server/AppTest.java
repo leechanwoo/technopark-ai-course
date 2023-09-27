@@ -86,6 +86,6 @@ class AppGrpcTest {
         OnnxTensor test = OnnxTensor.createTensor(env, testData);
         Result output = session.run(Collections.singletonMap(inputName, test));
 
-        assertEquals(1, output.size());
+        assertEquals(2, output.size());
     }
 }

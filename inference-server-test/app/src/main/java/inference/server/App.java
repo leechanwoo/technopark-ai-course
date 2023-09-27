@@ -93,6 +93,7 @@ public class App {
 
         String inputName = session.getInputNames().iterator().next();
 
+        // Input data 
         float[][][][] testData = new float[1][(int)shape[1]][(int)shape[2]][(int)shape[3]];
         for (float[][][] dim : testData) {
            for (float[][] channels : dim) {
@@ -105,6 +106,8 @@ public class App {
         }
 
         OnnxTensor test = OnnxTensor.createTensor(env, testData);
+        // ----
+
         Result output = session.run(Collections.singletonMap(inputName, test));
         float[][] probs = (float[][])output.get(0).getValue();
         for (float p : probs[0]) {
