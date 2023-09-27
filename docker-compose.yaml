@@ -52,3 +52,19 @@ services:
     build:
       dockerfile: ./dockerfiles/web-server.Dockerfile
 
+
+  protoc:
+    image: protoc:local
+    volumes:
+      - ./protos:/home
+
+    environment:
+      - DIR=/home
+      - OUT_DIR=/home/web
+
+    build:
+      dockerfile: ./dockerfiles/protoc.Dockerfile
+
+    command: bash
+    tty: true
+    stdin_open: true
