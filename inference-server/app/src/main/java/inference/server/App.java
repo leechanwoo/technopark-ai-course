@@ -9,17 +9,43 @@ import com.example.GrpcTest;
 // import io.grpc.ManagedChannel;
 // import io.grpc.ManagedChannelBuilder;
 // import io.grpc.stub.StreamObserver;
+import io.grpc.Grpc;
+import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+
+
+import ai.onnxruntime.NodeInfo;
+import ai.onnxruntime.TensorInfo;
+import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OrtEnvironment;
+import ai.onnxruntime.OrtException;
+import ai.onnxruntime.OrtSession;
+import ai.onnxruntime.OrtSession.Result;
+import ai.onnxruntime.OrtSession.SessionOptions;
+import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
+
+import java.io.IOException;
+import java.util.Collections;
+
+
 
 public class App {
     public String getGreeting() {
         return "Hello World!";
     }
 
-    public static void main(String[] args) {
 
-        Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
+    public static void main(String[] args) {
+        try {
+            onnxRunner();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        
+        // Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
+        Server server = Grpc.newServerBuilderForPort(50051, InsecureServerCredentials.create())
                 .addService(new HelloServiceImpl()) // Register your service implementation
                 .build();
 
@@ -46,14 +72,52 @@ public class App {
             
             // Implement your server-side logic here
             String message = "Hello, " + request.getName();
-            
+            System.out.println(message);
+
             // Build and send the response
-            GrpcTest.HelloResponse response = GrpcTest.HelloResponse.newBuilder()
-                    .setGreeting(message)
-                    .build();
-            
+            GrpcTest.HelloResponse response = GrpcTest.HelloResponse
+                .newBuilder()
+                .setGreeting(message)
+                .build();
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
     }
+
+    static void onnxRunner() throws OrtException, IOException {
+        OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+        OrtSession.SessionOptions opts = new SessionOptions();
+        opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+
+        OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
+
+        TensorInfo inputTensorInfo = (TensorInfo)session.getInputInfo().get("input").getInfo();
+        long[] shape = inputTensorInfo.getShape();
+
+        String inputName = session.getInputNames().iterator().next();
+
+        // Input data 
+        float[][][][] testData = new float[1][(int)shape[1]][(int)shape[2]][(int)shape[3]];
+        for (float[][][] dim : testData) {
+           for (float[][] channels : dim) {
+               for (float[] rows : channels) {
+                   for (float elem : rows ) {
+                       elem = 0;
+                   }
+               }
+           } 
+        }
+
+        OnnxTensor test = OnnxTensor.createTensor(env, testData);
+        // ----
+
+        Result output = session.run(Collections.singletonMap(inputName, test));
+        float[][] probs = (float[][])output.get(0).getValue();
+        // for (float p : probs[0]) {
+        //     System.out.println(p);
+        // }
+    }
+
 }

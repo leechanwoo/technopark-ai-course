@@ -1,15 +1,28 @@
 <!DOCTYPE html>
 
-<html>
-  <head>
-  </head>
+<head>
+  <meta charset="UTF-8">
+</head>
 
-  <body>
-    <h1> Hello, World!</h1>
-    <script>
-     fetch("http://127.0.0.1:8080/api/content")
-       .then(resp => resp.json())
-       .then(data => console.log(data))
-    </script>
-  </body>
+<body>
+  <h1>Upload image</h1>
+
+  <div>
+    <input id="uploader" type="file" />
+  </div>
+  <div>
+    <img id="imageData" />
+  </div>
+  <div>
+    <textarea id="textArea"></textarea>
+  </div>
+  <div>
+    <button id="sender"> Test </button>
+  </div>
+
+  <script type="module" src="./index.js"></script>
+
+
+</body>
+
 </html>

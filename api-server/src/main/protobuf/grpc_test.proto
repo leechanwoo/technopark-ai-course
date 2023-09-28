@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package com.example;
+
+service HelloService {
+  rpc SayHello (HelloRequest) returns (HelloResponse);
+}
+
+service ThisIsGeneratedJavaService {
+  rpc TestRPC (HelloRequest) returns (HelloResponse);
+}
+
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string greeting = 1;
+}
+
