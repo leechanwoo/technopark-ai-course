@@ -29,7 +29,7 @@ const uploadImage = async (event) => {
 };
 
 const sendImage = async () => {
-    const endpointUrl = "http://localhost:5000"
+    const endpointUrl = "http://localhost:5000/api/content/image"
 
     const requestData = { image: sharedBase64 };
 

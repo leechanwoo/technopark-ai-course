@@ -60,7 +60,6 @@ services:
 
     environment:
       - DIR=/home
-      - OUT_DIR=/home/web
 
     build:
       dockerfile: ./dockerfiles/protoc.Dockerfile

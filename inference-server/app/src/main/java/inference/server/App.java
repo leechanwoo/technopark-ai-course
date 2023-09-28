@@ -9,6 +9,8 @@ import com.example.GrpcTest;
 // import io.grpc.ManagedChannel;
 // import io.grpc.ManagedChannelBuilder;
 // import io.grpc.stub.StreamObserver;
+import io.grpc.Grpc;
+import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -41,7 +43,9 @@ public class App {
             e.printStackTrace();
         }
 
-        Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
+        
+        // Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
+        Server server = Grpc.newServerBuilderForPort(50051, InsecureServerCredentials.create())
                 .addService(new HelloServiceImpl()) // Register your service implementation
                 .build();
 
@@ -68,17 +72,18 @@ public class App {
             
             // Implement your server-side logic here
             String message = "Hello, " + request.getName();
-            
+            System.out.println(message);
+
             // Build and send the response
-            GrpcTest.HelloResponse response = GrpcTest.HelloResponse.newBuilder()
-                    .setGreeting(message)
-                    .build();
-            
+            GrpcTest.HelloResponse response = GrpcTest.HelloResponse
+                .newBuilder()
+                .setGreeting(message)
+                .build();
+
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         }
     }
-
 
     static void onnxRunner() throws OrtException, IOException {
         OrtEnvironment env = OrtEnvironment.getEnvironment();
@@ -110,9 +115,9 @@ public class App {
 
         Result output = session.run(Collections.singletonMap(inputName, test));
         float[][] probs = (float[][])output.get(0).getValue();
-        for (float p : probs[0]) {
-            System.out.println(p);
-        }
+        // for (float p : probs[0]) {
+        //     System.out.println(p);
+        // }
     }
 
 }
