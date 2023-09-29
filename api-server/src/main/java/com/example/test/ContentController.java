@@ -4,6 +4,7 @@ package com.example.test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Base64;
 import java.time.LocalDateTime;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import com.example.test.model.Content;
 import com.example.test.model.Type;
 import com.example.test.model.Status;
 import com.example.test.model.ImageJson;
+import com.example.test.model.ResultJson;
 
 import io.grpc.Channel;
 import io.grpc.Grpc;
@@ -45,7 +47,6 @@ import com.example.Prediction.CategoricalResult;
 import com.example.PredictionServiceGrpc;
 import com.example.PredictionServiceGrpc.PredictionServiceBlockingStub;
 
-import java.util.Base64;
 import com.google.protobuf.ByteString;
 
 
@@ -88,13 +89,15 @@ public class ContentController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/image")
-    public void imageHandler(@RequestBody ImageJson image) {
+    public ResultJson imageHandler(@RequestBody ImageJson image) {
         System.out.println("image recieved!");
 
         try {
             System.out.println("grpc sent");
-            client.predict(image.image().split(",")[1]);
-            System.out.println("grpc recieved");
+            List<java.lang.Float> result = client.predict(image.image().split(",")[1]);
+            int cat = repository.getMax(result);
+            return new ResultJson(String.format("Detection Category: %d", cat));
+
         } finally {
             // channel.shutdownNow(); // .awaitTermination();
         }
@@ -114,7 +117,7 @@ class PredictionClient {
     }
   
 
-    public void predict(String base64) {
+    public List<java.lang.Float> predict(String base64) {
 
         ImageData request = ImageData.newBuilder().setData(ByteString.copyFromUtf8(base64)).build();
         CategoricalResult response;
@@ -126,11 +129,13 @@ class PredictionClient {
             for (float r : response.getResultList()) {
                 System.out.println(r);
             }
+
+            return response.getResultList();
         } catch (StatusRuntimeException e) {
           // logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
           
             System.out.println("error: " + e);
-            return;
+            return new ArrayList<java.lang.Float>();
         }
     }
 }
