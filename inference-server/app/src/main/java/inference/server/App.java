@@ -18,9 +18,11 @@ import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.OrtSession.Result;
 import ai.onnxruntime.OrtSession.SessionOptions;
 import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
+import ai.onnxruntime.OrtUtil;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Base64;
 
 
 import com.example.GrpcTest;
@@ -61,29 +63,26 @@ public class App {
         public void imagePrediction(
             ImageData image,
             io.grpc.stub.StreamObserver<CategoricalResult> responseObserver) {
-            
-            // Implement your server-side logic here
-            // String message = "Hello, " + request.getName();
-            // System.out.println(message);
-            try { 
-                onnxRunner();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
-            System.out.println(image.getData().length());
+                try {
+                    float[][] result = onnxRunner(image);
 
-            // Build and send the response
-            CategoricalResult response = CategoricalResult.newBuilder() 
-                                                          .setResult("The result of cnn inference")
-                                                          .build();
+                    // Build and send the response
+                    CategoricalResult.Builder builder = CategoricalResult.newBuilder();
 
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+                    for (float r: result[0]) {
+                        builder.addResult(r);
+                    } 
+                    CategoricalResult response = builder.build();
+                    responseObserver.onNext(response);
+                    responseObserver.onCompleted();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         }
 
 
-        private void onnxRunner() throws OrtException, IOException {
+        private float[][] onnxRunner(ImageData image) throws OrtException, IOException {
             OrtEnvironment env = OrtEnvironment.getEnvironment();
 
             OrtSession.SessionOptions opts = new SessionOptions();
@@ -97,25 +96,38 @@ public class App {
             String inputName = session.getInputNames().iterator().next();
 
             // Input data
-            float[][][][] testData = new float[1][(int) shape[1]][(int) shape[2]][(int) shape[3]];
-            for (float[][][] dim : testData) {
-                for (float[][] channels : dim) {
-                    for (float[] rows : channels) {
-                        for (float elem : rows) {
-                            elem = 0;
-                        }
-                    }
-                }
+            int batch = 1;
+            int channel = (int)shape[1];
+            int row = (int)shape[2];
+            int col = (int)shape[3];
+            int pcounts = channel*row*col;
+
+            System.out.println(channel);
+            System.out.println(row);
+            System.out.println(col);
+
+
+            byte[] bimg = image.toByteArray();
+            float[] fimg = new float[pcounts];
+
+            System.out.println(bimg.length);
+            System.out.println(fimg.length);
+
+
+            for (int i = 0; i < pcounts; i++) {
+                fimg[i] = (float)(bimg[i] & 0xFF);
+                fimg[i] /= 255;
             }
 
-            OnnxTensor test = OnnxTensor.createTensor(env, testData);
-            // ----
+            long[] tshape = { 1, channel, row, col };
+            Object inputImg = OrtUtil.reshape(fimg, tshape);
 
-            Result output = session.run(Collections.singletonMap(inputName, test));
-            float[][] probs = (float[][]) output.get(0).getValue();
-            for (float p : probs[0]) {
-                System.out.println(p);
-            }
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputImg);
+
+            Result output = session.run(Collections.singletonMap(inputName, inputTensor));
+            // float[][] probs = (float[][]) output.get(0).getValue();
+            return (float[][])output.get(0).getValue();
+
         }
     }
 

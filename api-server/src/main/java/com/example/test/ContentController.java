@@ -45,6 +45,8 @@ import com.example.Prediction.CategoricalResult;
 import com.example.PredictionServiceGrpc;
 import com.example.PredictionServiceGrpc.PredictionServiceBlockingStub;
 
+import java.util.Base64;
+import com.google.protobuf.ByteString;
 
 
 
@@ -91,10 +93,10 @@ public class ContentController {
 
         try {
             System.out.println("grpc sent");
-            client.predict(image.image());
+            client.predict(image.image().split(",")[1]);
             System.out.println("grpc recieved");
         } finally {
-            channel.shutdownNow(); // .awaitTermination();
+            // channel.shutdownNow(); // .awaitTermination();
         }
     }
 }
@@ -112,15 +114,18 @@ class PredictionClient {
     }
   
 
-    public void predict(String image) {
-        // logger.info("Will try to greet " + name + " ...");
-        ImageData request = ImageData.newBuilder().setData(image).build();
+    public void predict(String base64) {
+
+        ImageData request = ImageData.newBuilder().setData(ByteString.copyFromUtf8(base64)).build();
         CategoricalResult response;
 
         try {
             System.out.println("try prediction");
             response = blockingStub.imagePrediction(request);
-            System.out.println(response.getResult());
+
+            for (float r : response.getResultList()) {
+                System.out.println(r);
+            }
         } catch (StatusRuntimeException e) {
           // logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
           
