@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package com.example;
+
+service PredictionService {
+  rpc ImagePrediction (ImageData) returns (CategoricalResult);
+}
+
+message ImageData {
+  bytes data = 1;
+}
+
+message TextData { 
+  repeated string data = 1;
+}
+
+message CategoricalResult {
+  repeated float result = 1;
+}
+
+message GeneratedTextResult {
+  repeated string result = 1;
+}
+
+message GeneratedImageResult {
+  string result = 1;
+}

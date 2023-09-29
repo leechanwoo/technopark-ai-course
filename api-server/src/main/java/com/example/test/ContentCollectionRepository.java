@@ -17,6 +17,21 @@ import com.example.test.model.Status;
 @Repository 
 public class ContentCollectionRepository {
     public ContentCollectionRepository() { }
+
+    public int getMax(List<java.lang.Float> fs) {
+        int maxIdx = 0;
+        int currentIdx = 0;
+        float maxVal = -999; 
+        
+        for (float f : fs ){
+            if (maxVal < f) {
+                maxVal = f;
+                maxIdx = currentIdx;
+            } 
+            currentIdx++;
+        }
+        return maxIdx;
+    }
 }
 
 

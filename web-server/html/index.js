@@ -42,6 +42,9 @@ const sendImage = async () => {
             body: JSON.stringify(requestData)
         })
 
+        const json = await response.json();
+        textArea.innerText = json.result;
+
         if (response.ok) {
             // Request was successful, handle the response if needed
             console.log('Image uploaded successfully.');
