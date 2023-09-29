@@ -3,12 +3,6 @@
  */
 package inference.server;
 
-import com.example.HelloServiceGrpc;
-import com.example.ThisIsGeneratedJavaServiceGrpc;
-import com.example.GrpcTest;
-// import io.grpc.ManagedChannel;
-// import io.grpc.ManagedChannelBuilder;
-// import io.grpc.stub.StreamObserver;
 import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
@@ -29,24 +23,23 @@ import java.io.IOException;
 import java.util.Collections;
 
 
+import com.example.GrpcTest;
+import com.example.HelloServiceGrpc;
+
+import com.example.Prediction;
+import com.example.PredictionServiceGrpc;
+import com.example.Prediction.ImageData;
+import com.example.Prediction.CategoricalResult;
+
 
 public class App {
-    public String getGreeting() {
-        return "Hello World!";
-    }
-
 
     public static void main(String[] args) {
-        try {
-            onnxRunner();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        
         // Server server = ServerBuilder.forPort(50051) // Specify the port to listen on
         Server server = Grpc.newServerBuilderForPort(50051, InsecureServerCredentials.create())
                 .addService(new HelloServiceImpl()) // Register your service implementation
+                .addService(new PredictionServiceImpl())
                 .build();
 
         try {
@@ -61,6 +54,69 @@ public class App {
             e.printStackTrace();
         }
 
+    }
+
+    static class PredictionServiceImpl extends PredictionServiceGrpc.PredictionServiceImplBase {
+        @Override
+        public void imagePrediction(
+            ImageData image,
+            io.grpc.stub.StreamObserver<CategoricalResult> responseObserver) {
+            
+            // Implement your server-side logic here
+            // String message = "Hello, " + request.getName();
+            // System.out.println(message);
+            try { 
+                onnxRunner();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            System.out.println(image.getData().length());
+
+            // Build and send the response
+            CategoricalResult response = CategoricalResult.newBuilder() 
+                                                          .setResult("The result of cnn inference")
+                                                          .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        }
+
+
+        private void onnxRunner() throws OrtException, IOException {
+            OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+            OrtSession.SessionOptions opts = new SessionOptions();
+            opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+
+            OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
+
+            TensorInfo inputTensorInfo = (TensorInfo) session.getInputInfo().get("input").getInfo();
+            long[] shape = inputTensorInfo.getShape();
+
+            String inputName = session.getInputNames().iterator().next();
+
+            // Input data
+            float[][][][] testData = new float[1][(int) shape[1]][(int) shape[2]][(int) shape[3]];
+            for (float[][][] dim : testData) {
+                for (float[][] channels : dim) {
+                    for (float[] rows : channels) {
+                        for (float elem : rows) {
+                            elem = 0;
+                        }
+                    }
+                }
+            }
+
+            OnnxTensor test = OnnxTensor.createTensor(env, testData);
+            // ----
+
+            Result output = session.run(Collections.singletonMap(inputName, test));
+            float[][] probs = (float[][]) output.get(0).getValue();
+            for (float p : probs[0]) {
+                System.out.println(p);
+            }
+        }
     }
 
 
@@ -85,39 +141,5 @@ public class App {
         }
     }
 
-    static void onnxRunner() throws OrtException, IOException {
-        OrtEnvironment env = OrtEnvironment.getEnvironment();
-
-        OrtSession.SessionOptions opts = new SessionOptions();
-        opts.setOptimizationLevel(OptLevel.BASIC_OPT);
-
-        OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
-
-        TensorInfo inputTensorInfo = (TensorInfo)session.getInputInfo().get("input").getInfo();
-        long[] shape = inputTensorInfo.getShape();
-
-        String inputName = session.getInputNames().iterator().next();
-
-        // Input data 
-        float[][][][] testData = new float[1][(int)shape[1]][(int)shape[2]][(int)shape[3]];
-        for (float[][][] dim : testData) {
-           for (float[][] channels : dim) {
-               for (float[] rows : channels) {
-                   for (float elem : rows ) {
-                       elem = 0;
-                   }
-               }
-           } 
-        }
-
-        OnnxTensor test = OnnxTensor.createTensor(env, testData);
-        // ----
-
-        Result output = session.run(Collections.singletonMap(inputName, test));
-        float[][] probs = (float[][])output.get(0).getValue();
-        // for (float p : probs[0]) {
-        //     System.out.println(p);
-        // }
-    }
 
 }

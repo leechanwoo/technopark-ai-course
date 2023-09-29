@@ -56,7 +56,7 @@ services:
   protoc:
     image: protoc:local
     volumes:
-      - ./protos:/home
+      - ./protobuf:/home
 
     environment:
       - DIR=/home
