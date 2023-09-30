@@ -88,7 +88,7 @@ public class App {
             OrtSession.SessionOptions opts = new SessionOptions();
             opts.setOptimizationLevel(OptLevel.BASIC_OPT);
 
-            OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
+            OrtSession session = env.createSession("src/main/resources/mobilenetv2.onnx", opts);
 
             TensorInfo inputTensorInfo = (TensorInfo) session.getInputInfo().get("input").getInfo();
             long[] shape = inputTensorInfo.getShape();
@@ -152,6 +152,4 @@ public class App {
             responseObserver.onCompleted();
         }
     }
-
-
 }
