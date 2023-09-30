@@ -22,5 +22,6 @@ WORKDIR /home/ubuntu
 
 ENV JAVA_HOME /root/.sdkman/candidates/java/current
 
+ENV PATH "$PATH:/root/.sdkman/candidates/gradle/current/bin"
 
-CMD ["/root/.sdkman/candidates/gradle/current/bin/gradle", "run"]
+CMD ["gradle", "run"]
