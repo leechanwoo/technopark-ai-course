@@ -2,10 +2,7 @@ version: "3"
 
 services:
   api-server:
-    image: springboot-app:local
-    command: bash
-    tty: true
-    stdin_open: true
+    image: api-server:local
 
     ports:
       - 5000:5000
@@ -16,14 +13,11 @@ services:
     working_dir: /home/ubuntu/api-server
 
     build:
-      dockerfile: ./dockerfiles/springboot-app.Dockerfile
+      dockerfile: ./dockerfiles/api-server.Dockerfile
 
   inference-server:
-    image: ai-runtime:local
-    command: bash
-    tty: true
-    stdin_open: true
-    
+    image: inference-server:local
+
     ports:
       - 50051:50051 
 
@@ -33,7 +27,7 @@ services:
       - ./inference-server:/home/ubuntu/inference-server
 
     build:
-      dockerfile: ./dockerfiles/ai-runtime.Dockerfile
+      dockerfile: ./dockerfiles/inference-server.Dockerfile
    
 
   web-server:
@@ -53,17 +47,3 @@ services:
       dockerfile: ./dockerfiles/web-server.Dockerfile
 
 
-  protoc:
-    image: protoc:local
-    volumes:
-      - ./protobuf:/home
-
-    environment:
-      - DIR=/home
-
-    build:
-      dockerfile: ./dockerfiles/protoc.Dockerfile
-
-    command: bash
-    tty: true
-    stdin_open: true
