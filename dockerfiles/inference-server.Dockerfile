@@ -19,3 +19,8 @@ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
   
 
 WORKDIR /home/ubuntu
+
+ENV JAVA_HOME /root/.sdkman/candidates/java/current
+
+
+CMD ["/root/.sdkman/candidates/gradle/current/bin/gradle", "run"]

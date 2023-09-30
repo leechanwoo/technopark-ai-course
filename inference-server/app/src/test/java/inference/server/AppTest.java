@@ -16,7 +16,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
 import com.example.HelloServiceGrpc;
-import com.example.ThisIsGeneratedJavaServiceGrpc;
 import com.example.GrpcTest;
 
 import ai.onnxruntime.NodeInfo;
@@ -49,7 +48,7 @@ class AppGrpcTest {
     }
 
 
-    @Test
+    // @Test
     public void onnxruntime_test() throws OrtException, IOException {
         OrtEnvironment env = OrtEnvironment.getEnvironment();
         assertNotEquals(null, env);

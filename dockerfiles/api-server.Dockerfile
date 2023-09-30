@@ -18,3 +18,6 @@ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
   
 
 WORKDIR /home/ubuntu
+
+ENV JAVA_HOME /root/.sdkman/candidates/java/current
+CMD ["/root/.sdkman/candidates/java/current/bin/java", "-jar", "build/libs/test-0.0.1-SNAPSHOT.jar"]

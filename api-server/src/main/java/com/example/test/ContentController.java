@@ -67,7 +67,8 @@ public class ContentController {
         this.repository = repository;
 
         // grpc 
-        this.target = "172.20.0.4:50051";
+        // this.target = "172.20.0.3:50051";
+        this.target = "inference-server:50051";
         this.channel = Grpc.newChannelBuilder(target, InsecureChannelCredentials.create()).build();
         this.testClient = new HelloClient(channel);
         this.client = new PredictionClient(channel);
