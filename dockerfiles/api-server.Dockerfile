@@ -1,7 +1,7 @@
 
 FROM ubuntu:rolling
 
-RUN apt update && apt upgrade
+RUN apt update && apt upgrade -y 
 RUN apt install -y \
     wget \
     curl \
@@ -17,3 +17,9 @@ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk install springboot 3.1.3
   
 
+WORKDIR /home/ubuntu
+
+ENV JAVA_HOME /root/.sdkman/candidates/java/current
+ENV PATH "$PATH:/root/.sdkman/candidates/gradle/current/bin"
+
+CMD ["gradle", "bootRun"]

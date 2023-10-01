@@ -6,11 +6,6 @@ service HelloService {
   rpc SayHello (HelloRequest) returns (HelloResponse);
 }
 
-service ThisIsGeneratedJavaService {
-  rpc TestRPC (HelloRequest) returns (HelloResponse);
-}
-
-
 message HelloRequest {
   string name = 1;
 }
@@ -18,4 +13,3 @@ message HelloRequest {
 message HelloResponse {
   string greeting = 1;
 }
-

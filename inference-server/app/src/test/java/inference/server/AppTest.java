@@ -3,12 +3,88 @@
  */
 package inference.server;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class AppTest {
-    @Test void appHasAGreeting() {
-        App classUnderTest = new App();
-        assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import com.example.HelloServiceGrpc;
+import com.example.GrpcTest;
+
+import ai.onnxruntime.NodeInfo;
+import ai.onnxruntime.TensorInfo;
+import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OrtEnvironment;
+import ai.onnxruntime.OrtException;
+import ai.onnxruntime.OrtSession;
+import ai.onnxruntime.OrtSession.Result;
+import ai.onnxruntime.OrtSession.SessionOptions;
+import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
+
+import java.io.IOException;
+import java.util.Collections;
+
+class AppGrpcTest {
+
+    // @Test
+    public void grpc_client_test() {
+
+        // Create a channel to communicate with the server
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051).usePlaintext().build();
+
+        HelloServiceGrpc.HelloServiceBlockingStub blockingStub = HelloServiceGrpc.newBlockingStub(channel);
+        GrpcTest.HelloResponse response = blockingStub.sayHello(GrpcTest.HelloRequest.newBuilder().setName("Alice").build());
+
+        channel.shutdown();
+
+        assertEquals("Hello, Alice", response.getGreeting());
+    }
+
+
+    // @Test
+    public void onnxruntime_test() throws OrtException, IOException {
+        OrtEnvironment env = OrtEnvironment.getEnvironment();
+        assertNotEquals(null, env);
+
+        OrtSession.SessionOptions opts = new SessionOptions();
+        opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+        assertNotEquals(null, opts);
+
+        OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
+        assertNotEquals(null, session);
+
+        TensorInfo inputTensorInfo = (TensorInfo)session.getInputInfo().get("input").getInfo();
+        long[] shape = inputTensorInfo.getShape();
+        long[] expectedArr = { -1, 3, 224, 224 };
+
+        assertArrayEquals(expectedArr, shape, String.format("shape and array"));
+
+        String inputName = session.getInputNames().iterator().next();
+
+        assertEquals("input", inputName);
+
+
+        float[][][][] testData = new float[1][(int)shape[1]][(int)shape[2]][(int)shape[3]];
+        for (float[][][] dim : testData) {
+           for (float[][] channels : dim) {
+               for (float[] rows : channels) {
+                   for (float elem : rows ) {
+                       elem = 0;
+                   }
+               }
+           } 
+        }
+
+        OnnxTensor test = OnnxTensor.createTensor(env, testData);
+        Result output = session.run(Collections.singletonMap(inputName, test));
+
+        assertEquals(2, output.size());
     }
 }
