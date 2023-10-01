@@ -1,7 +1,7 @@
 
 FROM ubuntu:rolling
 
-RUN apt update && apt upgrade
+RUN apt update && apt upgrade -y 
 RUN apt install -y \
     wget \
     curl \
