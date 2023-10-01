@@ -11,6 +11,5 @@ sudo mkdir -p /usr/local/lib/docker/cli-plugins/
 sudo curl -SL https://github.com/docker/compose/releases/download/v2.20.3/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
 sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 sudo git clone https://github.com/leechanwoo/technopark-ai-course.git
-cd technopark-ai-course
-sudo docker compose up -d --build
+sudo docker compose -f $(pwd)/technopark-ai-course/docker-compose.yaml up -d --build
 ~
