@@ -125,7 +125,6 @@ public class App {
             OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputImg);
 
             Result output = session.run(Collections.singletonMap(inputName, inputTensor));
-            // float[][] probs = (float[][]) output.get(0).getValue();
             return (float[][])output.get(0).getValue();
 
         }
