@@ -12,6 +12,7 @@ import io.grpc.ServerBuilder;
 import ai.onnxruntime.NodeInfo;
 import ai.onnxruntime.TensorInfo;
 import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OnnxTensorLike;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
@@ -23,6 +24,8 @@ import ai.onnxruntime.OrtUtil;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 
 import com.example.GrpcTest;
@@ -88,12 +91,15 @@ public class App {
             OrtSession.SessionOptions opts = new SessionOptions();
             opts.setOptimizationLevel(OptLevel.BASIC_OPT);
 
-            OrtSession session = env.createSession("src/main/resources/mobilenetv2.onnx", opts);
+            OrtSession pproc_sess = env.createSession("src/main/resources/simple_image_preprocessor.onnx", opts);
 
-            TensorInfo inputTensorInfo = (TensorInfo) session.getInputInfo().get("input").getInfo();
+
+            OrtSession model_sess = env.createSession("src/main/resources/mobilenetv2.onnx", opts);
+
+            TensorInfo inputTensorInfo = (TensorInfo) model_sess.getInputInfo().get("input").getInfo();
             long[] shape = inputTensorInfo.getShape();
 
-            String inputName = session.getInputNames().iterator().next();
+            String inputName = model_sess.getInputNames().iterator().next();
 
             // Input data
             int batch = 1;
@@ -107,7 +113,8 @@ public class App {
             System.out.println(col);
 
 
-            byte[] bimg = image.toByteArray();
+            // byte[] bimg = image.toByteArray();
+            byte[] bimg = image.getData().toByteArray();
             float[] fimg = new float[pcounts];
 
             System.out.println(bimg.length);
@@ -116,15 +123,34 @@ public class App {
 
             for (int i = 0; i < pcounts; i++) {
                 fimg[i] = (float)(bimg[i] & 0xFF);
-                fimg[i] /= 255;
+                // fimg[i] /= 255;
             }
 
-            long[] tshape = { 1, channel, row, col };
-            Object inputImg = OrtUtil.reshape(fimg, tshape);
+            int hImg = image.getHeight();
+            int wImg = image.getWidth();
+            int cImg = image.getChannel();
+            long[] orgShape = { 1, cImg, hImg, wImg };
+            long[] inputShape = { 1, channel, row, col };
 
-            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputImg);
+            OnnxTensor dataTensor = OnnxTensor.createTensor(env, fimg);
+            OnnxTensor orgShapeTensor = OnnxTensor.createTensor(env, (Object)orgShape);
+            OnnxTensor inputShapeTensor = OnnxTensor.createTensor(env, (Object)inputShape);
+            Map<String, OnnxTensor> inputArgs = new HashMap();
+            inputArgs.put("RawImg", dataTensor);
+            inputArgs.put("shape", orgShapeTensor);
+            inputArgs.put("sizes", inputShapeTensor);
 
-            Result output = session.run(Collections.singletonMap(inputName, inputTensor));
+            Result pproc_result = pproc_sess.run(inputArgs);
+            float[][][][] pproc_img = (float[][][][])pproc_result.get(0).getValue();
+
+
+            // long[] tshape = { 1, channel, row, col };
+            // Object inputImg = OrtUtil.reshape(fimg, tshape);
+
+            // OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputImg);
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, pproc_img);
+
+            Result output = model_sess.run(Collections.singletonMap(inputName, inputTensor));
             return (float[][])output.get(0).getValue();
 
         }

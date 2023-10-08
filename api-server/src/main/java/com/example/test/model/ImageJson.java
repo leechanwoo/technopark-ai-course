@@ -2,5 +2,8 @@
 package com.example.test.model;
 
 public record ImageJson( 
-    String image
+    String image,
+    int width, 
+    int height,
+    int channel
 ) { }
