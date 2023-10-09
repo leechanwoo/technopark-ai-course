@@ -24,4 +24,11 @@ ENV JAVA_HOME /root/.sdkman/candidates/java/current
 
 ENV PATH "$PATH:/root/.sdkman/candidates/gradle/current/bin"
 
+ENV RESOURCES_PATH /home/ubuntu/resources
+
+RUN mkdir -p ${RESOURCES_PATH}
+
+COPY inference-server/app/src/main/resources/ ${RESOURCES_PATH}
+
+
 CMD ["gradle", "run"]
