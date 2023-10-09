@@ -42,6 +42,7 @@ services:
 
     ports:
       - 8080:80 
+      - 8081:5000
 
     build:
       dockerfile: ./dockerfiles/web-server.Dockerfile

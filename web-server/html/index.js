@@ -32,7 +32,8 @@ const uploadImage = async (event) => {
 };
 
 const sendImage = async () => {
-    const endpointUrl = "http://localhost:5000/api/content/image"
+    // const endpointUrl = "http://localhost:5000/api/content/image"
+    const endpointUrl = "http://localhost:8081";
 
     const requestData = { 
         image: sharedBase64, 

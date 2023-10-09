@@ -123,11 +123,12 @@ class PredictionClient {
         
 
         ImageData request = ImageData.newBuilder()
-               .setData(ByteString.copyFromUtf8(base64))
-               .setWidth(image.width())
-               .setHeight(image.height())
-               .setChannel(image.channel()) 
-               .build();
+            //    .setData(ByteString.copyFromUtf8(base64))
+            .setData(base64)
+            .setWidth(image.width())
+            .setHeight(image.height())
+            .setChannel(image.channel()) 
+            .build();
         CategoricalResult response;
 
         try {
