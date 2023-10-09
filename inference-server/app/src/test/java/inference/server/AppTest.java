@@ -29,7 +29,21 @@ import ai.onnxruntime.OrtSession.SessionOptions;
 import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
 
 import java.io.IOException;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+
+
 import java.util.Collections;
+import java.util.Base64;
+import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 class AppGrpcTest {
 
@@ -87,4 +101,151 @@ class AppGrpcTest {
 
         assertEquals(2, output.size());
     }
+
+
+    @Test
+    void base64DecodingTest() {
+		String text = "hello world";
+		byte[] targetBytes = text.getBytes();
+        
+        Encoder encoder = Base64.getEncoder();
+        byte[] encodedBytes = encoder.encode(targetBytes);
+        
+        Decoder decoder = Base64.getDecoder();
+        byte[] decodedBytes = decoder.decode(encodedBytes);
+        
+
+		for(int i = 0; i < decodedBytes.length; i++){
+			assertEquals(targetBytes[i], decodedBytes[i]);
+		}
+
+    }
+
+	@Test 
+	void base64ImageTest() throws IOException {
+
+        BufferedImage image = readImage("src/main/resources/tokkis.jpg");
+        String base64Image = imageToBase64(image);
+        BufferedImage decodedImage = base64ToImage(base64Image);
+        
+        if (image != null && decodedImage != null) {
+            int img_width = image.getWidth();
+            int img_height = image.getHeight();
+            int dimg_width = decodedImage.getWidth();
+            int dimg_height = decodedImage.getHeight();
+
+            assertEquals(2880, img_width);
+            assertEquals(1694, img_height);
+            assertEquals(img_width, dimg_width);
+            assertEquals(img_height, dimg_height);
+        } else {
+            assert(false);
+        }
+
+    }
+    
+
+    @Test
+    void imageToRank3Tensor() throws IOException {
+
+        BufferedImage image = readImage("src/main/resources/tokkis.jpg");
+        String base64Image = imageToBase64(image);
+        BufferedImage decodedImage = base64ToImage(base64Image);
+
+        int width = decodedImage.getWidth();
+        int height = decodedImage.getHeight();
+
+        float[] iimg = new float[width*height*3];
+        for (int i = 0; i < iimg.length; i++) {
+            iimg[i] = -1;
+        }
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = decodedImage.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+                iimg[y*width + x] = (float)r;
+                iimg[width*height + y*width + x] = (float)g;
+                iimg[2*width*height + y*width + x] = (float)b;
+            }
+        }
+
+        for (float p : iimg) {
+            assertTrue(p >= -1.0f && p <= 256.0f, String.format("pixel is %f", p));
+        }
+    }
+
+
+    // @Test
+    // void reverseBase64EncodeTest() throws IOException {
+    //     BufferedImage image = readImage("src/main/resources/tokkis.jpg");
+    //     String base64Image = imageToBase64(image);
+    //     BufferedImage decodedImage = base64ToImage(base64Image);
+    //     float[] fimg = bufferTofloatImage(decodedImage);
+
+    //     int width = decodedImage.getWidth();
+    //     int height = decodedImage.getHeight();
+
+    //     byte[] bimg = new int[fimg.length/3];
+
+    //     for (int i = 0; i < fimg.length; i++){
+    //         int r = ((int)fimg[i]) << 16;
+    //         int g = ((int)fimg[width*height+i]) << 8; 
+    //         int b = (int)fimg[2*width*height+i];
+    //         int rgb = r | g | b;
+    //         bimg[i] = (byte)rgb;
+    //     }
+
+    // }
+
+    float[] bufferTofloatImage(BufferedImage decodedImage) throws IOException {
+        int width = decodedImage.getWidth();
+        int height = decodedImage.getHeight();
+
+        float[] fimg = new float[width*height*3];
+        for (int i = 0; i < fimg.length; i++) {
+            fimg[i] = -1;
+        }
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb = decodedImage.getRGB(x, y);
+                int r = (rgb >> 16) & 0xFF;
+                int g = (rgb >> 8) & 0xFF;
+                int b = rgb & 0xFF;
+                fimg[y*width + x] = (float)r;
+                fimg[width*height + y*width + x] = (float)g;
+                fimg[2*width*height + y*width + x] = (float)b;
+            }
+        }
+
+        return fimg;
+    }
+
+    BufferedImage base64ToImage(String base64) throws IOException {
+        Decoder decoder = Base64.getDecoder();
+        byte[] decodedBytes = decoder.decode(base64);
+        ByteArrayInputStream decodedByteImage = new ByteArrayInputStream(decodedBytes);
+        return ImageIO.read(decodedByteImage);
+    }
+
+
+    BufferedImage readImage(String imagePath) throws IOException {
+        File imageFile = new File(imagePath);
+        return ImageIO.read(imageFile);
+    }
+
+    String imageToBase64(BufferedImage image) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(image, "jpg", byteArrayOutputStream);
+
+        byte[] imageBytes = byteArrayOutputStream.toByteArray();
+        // Encode byte array to Base64
+        return Base64.getEncoder().encodeToString(imageBytes);
+    }
+
+
+
 }
