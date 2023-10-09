@@ -12,6 +12,7 @@ import io.grpc.ServerBuilder;
 import ai.onnxruntime.NodeInfo;
 import ai.onnxruntime.TensorInfo;
 import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OnnxTensorLike;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtException;
 import ai.onnxruntime.OrtSession;
@@ -21,8 +22,8 @@ import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
 import ai.onnxruntime.OrtUtil;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Base64;
+import java.io.ByteArrayInputStream;
+
 
 
 import com.example.GrpcTest;
@@ -32,6 +33,16 @@ import com.example.Prediction;
 import com.example.PredictionServiceGrpc;
 import com.example.Prediction.ImageData;
 import com.example.Prediction.CategoricalResult;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Base64;
+import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 
 public class App {
@@ -88,45 +99,97 @@ public class App {
             OrtSession.SessionOptions opts = new SessionOptions();
             opts.setOptimizationLevel(OptLevel.BASIC_OPT);
 
-            OrtSession session = env.createSession("src/main/resources/mobilenetv2.onnx", opts);
+            OrtSession pproc_sess = env.createSession("src/main/resources/simple_image_preprocessor.onnx", opts);
+            OrtSession model_sess = env.createSession("src/main/resources/mobilenetv2.onnx", opts);
 
-            TensorInfo inputTensorInfo = (TensorInfo) session.getInputInfo().get("input").getInfo();
+            TensorInfo inputTensorInfo = (TensorInfo) model_sess.getInputInfo().get("input").getInfo();
             long[] shape = inputTensorInfo.getShape();
 
-            String inputName = session.getInputNames().iterator().next();
+            String inputName = model_sess.getInputNames().iterator().next();
 
             // Input data
             int batch = 1;
-            int channel = (int)shape[1];
-            int row = (int)shape[2];
-            int col = (int)shape[3];
-            int pcounts = channel*row*col;
+            long channel = shape[1];
+            long row = shape[2];
+            long col = shape[3];
+            // int pcounts = channel*row*col;
 
             System.out.println(channel);
             System.out.println(row);
             System.out.println(col);
 
 
-            byte[] bimg = image.toByteArray();
-            float[] fimg = new float[pcounts];
+            // byte[] bimg = image.toByteArray();
+            // byte[] bimg = image.getData().getBytes();
+            BufferedImage bimg = base64ToImage(image.getData());
 
-            System.out.println(bimg.length);
-            System.out.println(fimg.length);
+            // float[] fimg = new float[pcounts];
+            float[] fimg = bufferTofloatImage(bimg);
+
+            // for (int i = 0; i < pcounts; i++) {
+            //     fimg[i] = (float)(bimg[i] & 0xFF);
+            //     // fimg[i] /= 255;
+            // }
+
+            // int hImg = image.getHeight();
+            // int wImg = image.getWidth();
+            // int cImg = image.getChannel();
+            long[] orgShape = { 1, image.getChannel(), image.getHeight(), image.getWidth() };
+            long[] inputShape = { 1, channel, row, col };
+
+            OnnxTensor dataTensor = OnnxTensor.createTensor(env, fimg);
+            OnnxTensor orgShapeTensor = OnnxTensor.createTensor(env, (Object)orgShape);
+            OnnxTensor inputShapeTensor = OnnxTensor.createTensor(env, (Object)inputShape);
+
+            Map<String, OnnxTensor> inputArgs = new HashMap();
+            inputArgs.put("RawImg", dataTensor);
+            inputArgs.put("shape", orgShapeTensor);
+            inputArgs.put("sizes", inputShapeTensor);
+
+            Result pproc_result = pproc_sess.run(inputArgs);
+            float[][][][] pproc_img = (float[][][][])pproc_result.get(0).getValue();
 
 
-            for (int i = 0; i < pcounts; i++) {
-                fimg[i] = (float)(bimg[i] & 0xFF);
-                fimg[i] /= 255;
-            }
+            // long[] tshape = { 1, channel, row, col };
+            // Object inputImg = OrtUtil.reshape(fimg, tshape);
 
-            long[] tshape = { 1, channel, row, col };
-            Object inputImg = OrtUtil.reshape(fimg, tshape);
+            // OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputImg);
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, pproc_img);
 
-            OnnxTensor inputTensor = OnnxTensor.createTensor(env, inputImg);
-
-            Result output = session.run(Collections.singletonMap(inputName, inputTensor));
+            Result output = model_sess.run(Collections.singletonMap(inputName, inputTensor));
             return (float[][])output.get(0).getValue();
 
+        }
+
+        private float[] bufferTofloatImage(BufferedImage decodedImage) throws IOException {
+            int width = decodedImage.getWidth();
+            int height = decodedImage.getHeight();
+
+            float[] fimg = new float[width * height * 3];
+            for (int i = 0; i < fimg.length; i++) {
+                fimg[i] = -1;
+            }
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int rgb = decodedImage.getRGB(x, y);
+                    int r = (rgb >> 16) & 0xFF;
+                    int g = (rgb >> 8) & 0xFF;
+                    int b = rgb & 0xFF;
+                    fimg[y * width + x] = (float) r;
+                    fimg[width * height + y * width + x] = (float) g;
+                    fimg[2 * width * height + y * width + x] = (float) b;
+                }
+            }
+
+            return fimg;
+        }
+
+        private BufferedImage base64ToImage(String base64) throws IOException {
+            Decoder decoder = Base64.getDecoder();
+            byte[] decodedBytes = decoder.decode(base64);
+            ByteArrayInputStream decodedByteImage = new ByteArrayInputStream(decodedBytes);
+            return ImageIO.read(decodedByteImage);
         }
     }
 
@@ -151,4 +214,5 @@ public class App {
             responseObserver.onCompleted();
         }
     }
+
 }
