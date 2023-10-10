@@ -33,7 +33,9 @@ const uploadImage = async (event) => {
 
 const sendImage = async () => {
     // const endpointUrl = "http://localhost:5000/api/content/image"
-    const endpointUrl = "http://localhost:8081";
+    // const endpointUrl = "http://localhost:8081";
+    const urlSplited = window.location.origin.split(":")
+    const apiEndpoint = urlSplited[0] + ":" + urlSplited[1] + ":8081"
 
     const requestData = { 
         image: sharedBase64, 
@@ -43,7 +45,7 @@ const sendImage = async () => {
     };
 
     try {
-        const response = await fetch(endpointUrl, {
+        const response = await fetch(apiEndpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
