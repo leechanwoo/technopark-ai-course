@@ -99,8 +99,16 @@ public class App {
             OrtSession.SessionOptions opts = new SessionOptions();
             opts.setOptimizationLevel(OptLevel.BASIC_OPT);
 
-            OrtSession pproc_sess = env.createSession("src/main/resources/simple_image_preprocessor.onnx", opts);
-            OrtSession model_sess = env.createSession("src/main/resources/mobilenetv2.onnx", opts);
+
+            OrtSession pproc_sess;
+            OrtSession model_sess;
+            String resource_path = System.getenv("RESOURCES_PATH");
+
+            resource_path = resource_path != null ? resource_path : "src/main/resources";
+
+            pproc_sess = env.createSession(resource_path + "/simple_image_preprocessor.onnx", opts);
+            model_sess = env.createSession(resource_path + "/mobilenetv2.onnx", opts);
+
 
             TensorInfo inputTensorInfo = (TensorInfo) model_sess.getInputInfo().get("input").getInfo();
             long[] shape = inputTensorInfo.getShape();

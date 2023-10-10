@@ -1,6 +1,8 @@
+
+
 provider "aws" {
-  region = "ap-northeast-2"  
 }
+
 
 resource "aws_instance" "ai_web_application" {
   ami           = "ami-02288bc8778f3166f"  

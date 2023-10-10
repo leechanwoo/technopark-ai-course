@@ -47,6 +47,20 @@ import java.awt.image.BufferedImage;
 
 class AppGrpcTest {
 
+
+    @Test 
+    public void envTestTrue() {
+        String path = System.getenv("RESOURCES_PATH");
+        assertEquals("/home/ubuntu/resources", path, path);
+    }
+
+
+    @Test 
+    public void envTestFalse() {
+        String path = System.getenv("NONE_TEST_DFIEJKFVDHJK");
+        assertEquals(null, path, path);
+    }
+
     // @Test
     public void grpc_client_test() {
 
@@ -64,6 +78,7 @@ class AppGrpcTest {
 
     // @Test
     public void onnxruntime_test() throws OrtException, IOException {
+        String resources_path = System.getenv("RESOURCES_PATH");
         OrtEnvironment env = OrtEnvironment.getEnvironment();
         assertNotEquals(null, env);
 
@@ -71,7 +86,7 @@ class AppGrpcTest {
         opts.setOptimizationLevel(OptLevel.BASIC_OPT);
         assertNotEquals(null, opts);
 
-        OrtSession session = env.createSession("src/main/resources/mobilenetv2-10.onnx", opts);
+        OrtSession session = env.createSession(resources_path + "/mobilenetv2-10.onnx", opts);
         assertNotEquals(null, session);
 
         TensorInfo inputTensorInfo = (TensorInfo)session.getInputInfo().get("input").getInfo();
@@ -123,8 +138,8 @@ class AppGrpcTest {
 
 	@Test 
 	void base64ImageTest() throws IOException {
-
-        BufferedImage image = readImage("src/main/resources/tokkis.jpg");
+        String resources_path = System.getenv("RESOURCES_PATH");
+        BufferedImage image = readImage(resources_path + "/tokkis.jpg");
         String base64Image = imageToBase64(image);
         BufferedImage decodedImage = base64ToImage(base64Image);
         
@@ -148,7 +163,8 @@ class AppGrpcTest {
     @Test
     void imageToRank3Tensor() throws IOException {
 
-        BufferedImage image = readImage("src/main/resources/tokkis.jpg");
+        String resources_path = System.getenv("RESOURCES_PATH");
+        BufferedImage image = readImage(resources_path + "/tokkis.jpg");
         String base64Image = imageToBase64(image);
         BufferedImage decodedImage = base64ToImage(base64Image);
 
@@ -177,28 +193,6 @@ class AppGrpcTest {
         }
     }
 
-
-    // @Test
-    // void reverseBase64EncodeTest() throws IOException {
-    //     BufferedImage image = readImage("src/main/resources/tokkis.jpg");
-    //     String base64Image = imageToBase64(image);
-    //     BufferedImage decodedImage = base64ToImage(base64Image);
-    //     float[] fimg = bufferTofloatImage(decodedImage);
-
-    //     int width = decodedImage.getWidth();
-    //     int height = decodedImage.getHeight();
-
-    //     byte[] bimg = new int[fimg.length/3];
-
-    //     for (int i = 0; i < fimg.length; i++){
-    //         int r = ((int)fimg[i]) << 16;
-    //         int g = ((int)fimg[width*height+i]) << 8; 
-    //         int b = (int)fimg[2*width*height+i];
-    //         int rgb = r | g | b;
-    //         bimg[i] = (byte)rgb;
-    //     }
-
-    // }
 
     float[] bufferTofloatImage(BufferedImage decodedImage) throws IOException {
         int width = decodedImage.getWidth();
