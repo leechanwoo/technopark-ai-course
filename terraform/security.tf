@@ -14,7 +14,7 @@ resource "aws_security_group_rule" "cicd_sg_ingress_ssh" {
 resource "aws_security_group_rule" "cicd_sg_ingress_https" {
   type        = "ingress"
   from_port   = 8080
-  to_port     = 8080
+  to_port     = 8090
   protocol    = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
   security_group_id = aws_security_group.cicd_sg.id
