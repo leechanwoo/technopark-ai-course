@@ -95,7 +95,7 @@ public class ContentController {
 
         try {
             System.out.println("grpc sent");
-            List<java.lang.Float> result = client.predict(image.image().split(",")[1]);
+            List<java.lang.Float> result = client.predict(image);
             int cat = repository.getMax(result);
             return new ResultJson(String.format("Detection Category: %d", cat));
 
@@ -118,9 +118,17 @@ class PredictionClient {
     }
   
 
-    public List<java.lang.Float> predict(String base64) {
+    public List<java.lang.Float> predict(ImageJson image) {
+        String base64 = image.image().split(",")[1];
+        
 
-        ImageData request = ImageData.newBuilder().setData(ByteString.copyFromUtf8(base64)).build();
+        ImageData request = ImageData.newBuilder()
+            //    .setData(ByteString.copyFromUtf8(base64))
+            .setData(base64)
+            .setWidth(image.width())
+            .setHeight(image.height())
+            .setChannel(image.channel()) 
+            .build();
         CategoricalResult response;
 
         try {

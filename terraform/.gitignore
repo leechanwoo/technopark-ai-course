@@ -33,3 +33,8 @@ override.tf.json
 .terraformrc
 terraform.rc
 *.pem
+tfc-getting-started
+.terraform
+.terraform.d
+.aws
+.bash_history

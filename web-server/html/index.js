@@ -26,12 +26,21 @@ const uploadImage = async (event) => {
     imageData.src = base64;
     textArea.innerText = base64;
     sharedBase64 = base64;
+    if (imageData) {
+        console.log("image size: (", imageData.naturalWidth, ", ", imageData.naturalHeight, ")");
+    }
 };
 
 const sendImage = async () => {
-    const endpointUrl = "http://localhost:5000/api/content/image"
+    // const endpointUrl = "http://localhost:5000/api/content/image"
+    const endpointUrl = "http://localhost:8081";
 
-    const requestData = { image: sharedBase64 };
+    const requestData = { 
+        image: sharedBase64, 
+        width: imageData.naturalWidth,
+        height: imageData.naturalHeight,
+        channel: 3,
+    };
 
     try {
         const response = await fetch(endpointUrl, {

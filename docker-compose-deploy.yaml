@@ -12,8 +12,6 @@ services:
 
     working_dir: /home/ubuntu/api-server
 
-    build:
-      dockerfile: ./dockerfiles/api-server.Dockerfile
 
   inference-server:
     image: cjswosa22/inference-server:1.0.0
@@ -26,8 +24,6 @@ services:
     volumes:
       - ./inference-server:/home/ubuntu/inference-server
 
-    build:
-      dockerfile: ./dockerfiles/inference-server.Dockerfile
    
 
   web-server:
@@ -43,6 +39,3 @@ services:
     ports:
       - 8080:80 
       - 8081:5000
-
-    build:
-      dockerfile: ./dockerfiles/web-server.Dockerfile
