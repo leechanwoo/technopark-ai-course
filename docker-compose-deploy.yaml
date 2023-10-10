@@ -2,7 +2,7 @@ version: "3"
 
 services:
   api-server:
-    image: api-server:local
+    image: cjswosa22/api-server:1.0.0
 
     ports:
       - 5000:5000
@@ -14,7 +14,7 @@ services:
 
 
   inference-server:
-    image: inference-server:local
+    image: cjswosa22/inference-server:1.0.0
 
     ports:
       - 50051:50051 
@@ -27,7 +27,7 @@ services:
    
 
   web-server:
-    image: web-server:local
+    image: cjswosa22/web-server:1.0.0
     volumes:
       - ./web-server/html:/usr/share/nginx/html
       - ./web-server/nginx:/etc/nginx

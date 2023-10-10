@@ -1,3 +1,8 @@
-FROM hashicorp/terraform:1.6.0-rc1
+FROM hashicorp/terraform:1.6
 
-WORKDIR /home
+RUN apk update && apk add --no-cache bash 
+RUN apk add curl jq aws-cli
+
+WORKDIR /root
+
+ENTRYPOINT ["bash"]
