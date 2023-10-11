@@ -1,5 +1,6 @@
 
-FROM ubuntu:rolling
+# FROM ubuntu:rolling
+FROM nvidia/cuda:12.2.0-devel-ubuntu20.04
 
 RUN apt update && apt upgrade -y 
 RUN apt install -y \
