@@ -1,11 +1,10 @@
 
 
-provider "aws" {
-}
+provider "aws" { }
 
 
 resource "aws_instance" "ai_web_application" {
-  ami           = "ami-0c9c942bd7bf113a2"  
+  ami           = "ami-0e581dc33f688a5df"
   instance_type = "g4dn.xlarge"
 
   key_name = aws_key_pair.cicd_make_keypair.key_name
