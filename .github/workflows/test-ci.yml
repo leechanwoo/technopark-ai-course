@@ -9,11 +9,20 @@ on:
 
 jobs:
 
-  build:
+  api-test:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build the Docker image
+    - name: Testing the api server 
       run: docker run --rm -v ./api-server:/home/ubuntu/api-server -w /home/ubuntu/api-server cjswosa22/api-server:1.0.0 gradle test
+
+
+  inference-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Testing the inference server 
+      run: docker run --rm -v ./inference-server:/home/ubuntu/inference-server -w /home/ubuntu/inference-server cjswosa22/inference-server:1.0.0 gradle test
