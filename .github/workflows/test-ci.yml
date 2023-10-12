@@ -1,11 +1,10 @@
-name: Docker Image CI
+name: Verifying source code
 
 on:
   push:
-    # branches: [ "main" ]
-    branches: [ "ci" ]
+    branches: [ "main", "dev" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
 
 jobs:
 
@@ -16,8 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Testing the api server 
-      run: docker run --rm -v ./api-server:/home/ubuntu/api-server -w /home/ubuntu/api-server cjswosa22/api-server:1.0.0 gradle test
-
+      run: docker run --rm \
+                      -v ./api-server:/home/ubuntu/api-server \
+                      -w /home/ubuntu/api-server \
+                      cjswosa22/api-server:1.0.0 \
+                      gradle test
 
   inference-test:
     runs-on: ubuntu-latest
@@ -25,4 +27,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Testing the inference server 
-      run: docker run --rm -v ./inference-server:/home/ubuntu/inference-server -w /home/ubuntu/inference-server cjswosa22/inference-server:1.0.0 gradle test
+      run: docker run --rm \
+                      -v ./inference-server:/home/ubuntu/inference-server \
+                      -w /home/ubuntu/inference-server \
+                      cjswosa22/inference-server:1.0.0 \
+                      gradle test
