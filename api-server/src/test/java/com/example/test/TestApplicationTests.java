@@ -12,7 +12,7 @@ class TestApplicationTests {
 	@Test
 	void thisMustBeFailed() {
 		int i = 1;
-		assertEquals(0, i, String.format("the value of i is %d", i))
+		assertEquals(0, i, String.format("the value of i is %d", i));
 	}
 
 }
