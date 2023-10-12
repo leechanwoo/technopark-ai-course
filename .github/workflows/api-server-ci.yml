@@ -16,4 +16,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker run --rm api-server gradle test
+      run: docker run --rm -v ./api-server:/home/ubuntu/api-server -w /home/ubuntu/api-server cjswosa22/api-server:1.0.0 gradle test
