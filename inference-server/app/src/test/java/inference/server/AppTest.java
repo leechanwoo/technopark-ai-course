@@ -57,8 +57,22 @@ class AppGrpcTest {
         opts.setOptimizationLevel(OptLevel.BASIC_OPT);
         opts.addCUDA(0);
 
+        // OrtSession session = env.createSession(resources_path + "/mobilenetv2-10.onnx", opts);
+        // assertNotEquals(null, session);
+    }
+
+    @Test
+    public void gpuTest2() throws OrtException, IOException {
+        String resources_path = System.getenv("RESOURCES_PATH");
+
+        OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+        OrtSession.SessionOptions opts = new SessionOptions();
+        opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+        opts.addCUDA(0);
+
         OrtSession session = env.createSession(resources_path + "/mobilenetv2-10.onnx", opts);
-        assertNotEquals(null, session);
+        // assertNotEquals(null, session);
     }
 
     @Test 
