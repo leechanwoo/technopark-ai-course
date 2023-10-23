@@ -48,7 +48,7 @@ import java.awt.image.BufferedImage;
 class AppGrpcTest {
 
     @Test
-    public void gpuTest() {
+    public void gpuTest() throws OrtException, IOException {
         String resources_path = System.getenv("RESOURCES_PATH");
 
         OrtEnvironment env = OrtEnvironment.getEnvironment();
