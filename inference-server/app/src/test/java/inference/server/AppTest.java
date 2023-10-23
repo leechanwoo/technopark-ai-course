@@ -47,6 +47,19 @@ import java.awt.image.BufferedImage;
 
 class AppGrpcTest {
 
+    @Test
+    public void gpuTest() {
+        String resources_path = System.getenv("RESOURCES_PATH");
+
+        OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+        OrtSession.SessionOptions opts = new SessionOptions();
+        opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+        opts.addCUDA(0);
+
+        OrtSession session = env.createSession(resources_path + "/mobilenetv2-10.onnx", opts);
+        assertNotEquals(null, session);
+    }
 
     @Test 
     public void envTestTrue() {
