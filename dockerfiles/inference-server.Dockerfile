@@ -10,7 +10,8 @@ RUN apt install -y \
     zip \
     git \
     protobuf-compiler \
-    libcudnn8
+    libcudnn8 \
+    libcublas-12-0
 
 
 RUN curl -s "https://get.sdkman.io" | bash
