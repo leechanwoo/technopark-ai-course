@@ -1,6 +1,7 @@
 
 # FROM ubuntu:rolling
-FROM nvidia/cuda:12.2.0-devel-ubuntu20.04
+# FROM nvidia/cuda:12.2.0-devel-ubuntu20.04
+FROM nvidia/cuda:11.6.2-runtime-ubuntu20.04
 
 RUN apt update && apt upgrade -y 
 RUN apt install -y \
@@ -8,7 +9,8 @@ RUN apt install -y \
     curl \
     zip \
     git \
-    protobuf-compiler 
+    protobuf-compiler \
+    libcudnn8
 
 
 RUN curl -s "https://get.sdkman.io" | bash
