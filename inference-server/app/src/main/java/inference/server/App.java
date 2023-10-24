@@ -99,7 +99,6 @@ public class App {
             OrtSession.SessionOptions opts = new SessionOptions();
             opts.setOptimizationLevel(OptLevel.BASIC_OPT);
 
-
             OrtSession pproc_sess;
             OrtSession model_sess;
             String resource_path = System.getenv("RESOURCES_PATH");
