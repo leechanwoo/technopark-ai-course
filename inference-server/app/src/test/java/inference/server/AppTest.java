@@ -58,7 +58,7 @@ class AppGrpcTest {
 
         OrtSession.SessionOptions opts = new SessionOptions();
         opts.setOptimizationLevel(OptLevel.BASIC_OPT);
-        // opts.addCUDA(0);
+        opts.addCUDA(0);
 
         OrtSession pproc_sess;
         OrtSession model_sess;
