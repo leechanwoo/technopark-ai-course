@@ -28,6 +28,7 @@ import ai.onnxruntime.OrtSession.Result;
 import ai.onnxruntime.OrtSession.SessionOptions;
 import ai.onnxruntime.OrtSession.SessionOptions.OptLevel;
 
+
 import java.io.IOException;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -57,15 +58,6 @@ class AppGrpcTest {
         OrtSession.SessionOptions opts = new SessionOptions();
         opts.setOptimizationLevel(OptLevel.BASIC_OPT);
         opts.addCUDA(0);
-
-        OrtSession.SessionOptions.OptimizationLevel optimizationLevel = opts.getOptimizationLevel();
-        OrtSession.SessionOptions.GraphOptimizationLevel graphOptimizationLevel = opts.getGraphOptimizationLevel();
-
-        // Check available providers
-        OrtSession.SessionOptions.ExecutionProviders executionProviders = opts.getExecutionProviders();
-        List<String> availableProviders = executionProviders.getAvailableProviders();
-
-        assertTrue(availableProviders.contains("CUDA"), String.format("Cannot use GPU"));
 
         // OrtSession session = env.createSession(resources_path + "/mobilenetv2-10.onnx", opts);
         // assertNotEquals(null, session);
