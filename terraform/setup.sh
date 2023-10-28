@@ -20,5 +20,5 @@ sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
 # sudo systemctl start docker
 
-sudo git clone https://github.com/leechanwoo/technopark-ai-course.git
+sudo git clone -b gpu https://github.com/leechanwoo/technopark-ai-course.git
 sudo docker compose -f $(pwd)/technopark-ai-course/docker-compose-deploy.yaml up -d 
