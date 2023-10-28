@@ -92,8 +92,59 @@ public class App {
                 }
         }
 
-
         private float[][] onnxRunner(ImageData image) throws OrtException, IOException {
+
+            OrtEnvironment env = OrtEnvironment.getEnvironment();
+
+            OrtSession.SessionOptions opts = new SessionOptions();
+            opts.setOptimizationLevel(OptLevel.BASIC_OPT);
+            opts.addCUDA(0);
+
+            OrtSession pproc_sess;
+            OrtSession model_sess;
+            String resources_path = System.getenv("RESOURCES_PATH");
+
+            resources_path = resources_path != null ? resources_path : "src/main/resources";
+
+            pproc_sess = env.createSession(resources_path + "/simple_image_preprocessor.onnx", opts);
+            model_sess = env.createSession(resources_path + "/mobilenetv2.onnx", opts);
+
+            TensorInfo inputTensorInfo = (TensorInfo) model_sess.getInputInfo().get("input").getInfo();
+            long[] shape = inputTensorInfo.getShape();
+
+            String inputName = model_sess.getInputNames().iterator().next();
+
+            // Input data
+            int batch = 1;
+            long channel = shape[1];
+            long row = shape[2];
+            long col = shape[3];
+
+            BufferedImage bimg = base64ToImage(image.getData());
+            float[] fimg = bufferTofloatImage(bimg);
+
+            long[] orgShape = { 1, image.getChannel(), image.getHeight(), image.getWidth() };
+            long[] inputShape = { 1, channel, row, col };
+
+            OnnxTensor dataTensor = OnnxTensor.createTensor(env, fimg);
+            OnnxTensor orgShapeTensor = OnnxTensor.createTensor(env, (Object) orgShape);
+            OnnxTensor inputShapeTensor = OnnxTensor.createTensor(env, (Object) inputShape);
+
+            Map<String, OnnxTensor> inputArgs = new HashMap();
+            inputArgs.put("RawImg", dataTensor);
+            inputArgs.put("shape", orgShapeTensor);
+            inputArgs.put("sizes", inputShapeTensor);
+
+            Result pproc_result = pproc_sess.run(inputArgs);
+            float[][][][] pproc_img = (float[][][][]) pproc_result.get(0).getValue();
+
+            OnnxTensor inputTensor = OnnxTensor.createTensor(env, pproc_img);
+            Result output = model_sess.run(Collections.singletonMap(inputName, inputTensor));
+            return (float[][])output.get(0).getValue();
+        }
+
+
+        private float[][] old_onnxRunner(ImageData image) throws OrtException, IOException {
             OrtEnvironment env = OrtEnvironment.getEnvironment();
 
             OrtSession.SessionOptions opts = new SessionOptions();
